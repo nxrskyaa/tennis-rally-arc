@@ -1,65 +1,173 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect } from "react";
+import { useAccount } from "wagmi";
+import { SimpleWalletButton } from "@/components/simple-wallet-button";
+import { TennisGame } from "@/components/tennis-game";
+import { NetworkWarning } from "@/components/network-warning";
+import { ProfileModal } from "@/components/profile-modal";
+import { ScoreModal } from "@/components/score-modal";
+import { Leaderboard } from "@/components/leaderboard";
+import { useHasProfile, useGetPlayer } from "@/hooks/use-contract";
+import { useGameStore } from "@/store/game-store";
+import { useIsCorrectNetwork } from "@/hooks/use-contract";
 
 export default function Home() {
+  const { address, isConnected } = useAccount();
+  const isCorrectNetwork = useIsCorrectNetwork();
+  const { data: hasProfileData } = useHasProfile(address);
+  const { data: playerData } = useGetPlayer(address);
+  const {
+    hasProfile,
+    setHasProfile,
+    setProfile,
+    setShowProfileModal,
+    setShowLeaderboard,
+    pauseGame,
+  } = useGameStore();
+
+  useEffect(() => {
+    if (hasProfileData !== undefined) {
+      setHasProfile(hasProfileData);
+    }
+  }, [hasProfileData, setHasProfile]);
+
+  useEffect(() => {
+    if (playerData) {
+      setProfile({
+        exists: playerData[0],
+        nickname: playerData[1],
+        avatar: playerData[2],
+        bestScore: playerData[3],
+        totalScore: playerData[4],
+        gamesPlayed: playerData[5],
+        createdAt: playerData[6],
+        lastSubmittedAt: playerData[7],
+      });
+    }
+  }, [playerData, setProfile]);
+
+  useEffect(() => {
+    if (isConnected && !isCorrectNetwork) {
+      pauseGame();
+    }
+  }, [isConnected, isCorrectNetwork, pauseGame]);
+
+  const handleGenerateProfile = () => {
+    setShowProfileModal(true);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+      {/* Header */}
+      <header className="flex items-center justify-between px-4 py-4 sm:px-8">
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">🎾</span>
+          <div>
+            <h1 className="text-xl font-bold text-white">Tennis Rally</h1>
+            <p className="text-xs text-white/50">on Arc Testnet</p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowLeaderboard(true)}
+            className="rounded-xl bg-white/10 px-4 py-2 text-sm font-medium text-white transition hover:bg-white/20"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            🏆 Leaderboard
+          </button>
+          <SimpleWalletButton />
         </div>
-      </main>
-    </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="mx-auto max-w-4xl px-4 pb-8">
+        {!isConnected ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="mb-6 text-6xl">🎾</div>
+            <h2 className="mb-2 text-3xl font-bold text-white">
+              Welcome to Tennis Rally
+            </h2>
+            <p className="mb-8 max-w-md text-center text-white/60">
+              Connect your wallet to play the arcade tennis game on Arc Testnet.
+              Submit your scores on-chain!
+            </p>
+            <SimpleWalletButton />
+          </div>
+        ) : !isCorrectNetwork ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="mb-6 text-6xl">⚠️</div>
+            <h2 className="mb-2 text-2xl font-bold text-white">
+              Wrong Network
+            </h2>
+            <p className="mb-4 text-white/60">
+              Please switch to Arc Testnet to continue.
+            </p>
+          </div>
+        ) : !hasProfile ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="mb-6 text-6xl">👤</div>
+            <h2 className="mb-2 text-2xl font-bold text-white">
+              No Player Profile
+            </h2>
+            <p className="mb-6 max-w-md text-center text-white/60">
+              You need to create a player profile before you can play and submit
+              scores to the leaderboard.
+            </p>
+            <button
+              onClick={handleGenerateProfile}
+              className="rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-8 py-3 font-bold text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
+            >
+              Generate Player Profile
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Player Stats */}
+            {playerData && (
+              <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="text-lg font-bold text-white">
+                    {playerData[1] || "Player"}
+                  </div>
+                  <div className="text-xs text-white/50">{playerData[2]}</div>
+                </div>
+                <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="text-lg font-bold text-yellow-400">
+                    {playerData[3].toString()}
+                  </div>
+                  <div className="text-xs text-white/50">Best Score</div>
+                </div>
+                <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="text-lg font-bold text-cyan-400">
+                    {playerData[5].toString()}
+                  </div>
+                  <div className="text-xs text-white/50">Games Played</div>
+                </div>
+                <div className="rounded-xl bg-white/5 p-3 text-center">
+                  <div className="text-lg font-bold text-green-400">
+                    {playerData[4].toString()}
+                  </div>
+                  <div className="text-xs text-white/50">Total Score</div>
+                </div>
+              </div>
+            )}
+
+            {/* Game */}
+            <TennisGame />
+
+            {/* Controls hint */}
+            <div className="mt-4 text-center text-sm text-white/40">
+              🖱️ Move mouse to control paddle • 👆 Drag on mobile • Click to pause
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Modals */}
+      <NetworkWarning />
+      <ProfileModal />
+      <ScoreModal />
+      <Leaderboard />
+    </main>
   );
 }

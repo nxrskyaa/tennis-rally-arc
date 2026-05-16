@@ -42,7 +42,7 @@ export function ProfileModal() {
             onClick={() => setShowProfileModal(false)}
             className="rounded-xl bg-white px-6 py-3 font-bold text-emerald-600 shadow-lg transition-transform hover:scale-105"
           >
-            Let's Play!
+            Let&apos;s Play!
           </button>
         </div>
       </div>

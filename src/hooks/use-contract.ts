@@ -4,7 +4,6 @@ import {
   useReadContract,
   useWriteContract,
   useWaitForTransactionReceipt,
-  useAccount,
   useChainId,
 } from "wagmi";
 import {

@@ -9,17 +9,11 @@ import { SUBMIT_SCORE_FEE } from "@/lib/contracts";
 export function ScoreModal() {
   const { showScoreModal, setShowScoreModal, score, combo, duration, sessionId } =
     useGameStore();
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const { data: allowance } = useAllowance(address);
   const { approve, isPending: isApproving, isConfirmed: isApproved } = useApproveUSDC();
   const { submit, isPending: isSubmitting, isConfirmed: isSubmitted } = useSubmitScore();
   const [step, setStep] = useState<"approve" | "submit" | "done">("approve");
-
-  useEffect(() => {
-    if (isApproved) {
-      setStep("submit");
-    }
-  }, [isApproved]);
 
   useEffect(() => {
     if (isSubmitted) {
@@ -30,6 +24,7 @@ export function ScoreModal() {
   if (!showScoreModal) return null;
 
   const needsApproval = !allowance || allowance < SUBMIT_SCORE_FEE;
+  const readyToSubmit = !needsApproval || isApproved || step === "submit";
 
   const handleApprove = () => {
     approve();
@@ -69,7 +64,9 @@ export function ScoreModal() {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
       <div className="mx-4 w-full max-w-md rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 p-6 shadow-2xl">
         <h2 className="mb-1 text-center text-2xl font-bold text-white">Game Over!</h2>
-        <p className="mb-6 text-center text-white/80">Submit your score to the leaderboard</p>
+        <p className="mb-6 text-center text-white/80">
+          {isConnected ? "Submit your score to the leaderboard" : "Connect wallet to submit, or play again in practice mode"}
+        </p>
 
         <div className="mb-6 grid grid-cols-3 gap-3">
           <div className="rounded-xl bg-white/20 p-3 text-center">
@@ -87,10 +84,14 @@ export function ScoreModal() {
         </div>
 
         <div className="mb-4 rounded-xl bg-white/10 p-3 text-center text-sm text-white/80">
-          Fee: 1 USDC
+          {isConnected ? "Fee: 1 USDC" : "Practice score — wallet not connected"}
         </div>
 
-        {needsApproval && step === "approve" ? (
+        {!isConnected ? (
+          <div className="rounded-xl bg-white/10 p-3 text-center text-sm text-white/80">
+            Connect an injected wallet from the top bar if you want to submit scores on-chain.
+          </div>
+        ) : needsApproval && !readyToSubmit ? (
           <button
             onClick={handleApprove}
             disabled={isApproving}
@@ -115,7 +116,7 @@ export function ScoreModal() {
           }}
           className="mt-3 w-full rounded-xl py-2 text-sm text-white/60 transition hover:text-white"
         >
-          Skip & Play Again
+          {isConnected ? "Skip & Play Again" : "Play Again"}
         </button>
       </div>
     </div>

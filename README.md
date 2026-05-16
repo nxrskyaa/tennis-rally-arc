@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tennis Rally on Arc
 
-## Getting Started
+Arcade tennis rally game built with Next.js, TailwindCSS, wagmi, and viem for Arc Testnet.
 
-First, run the development server:
+## Highlights
+
+- Fast HTML5 Canvas tennis gameplay with mouse and touch controls
+- Simple injected-wallet connection only — no WalletConnect dependency
+- Arc Testnet custom chain config via wagmi + viem
+- Optional practice mode: users can play before connecting a wallet
+- On-chain player profiles and score submission
+- USDC approval flow for leaderboard submissions
+- Static export ready for Vercel or any static host
+
+## Stack
+
+- Next.js 16 App Router
+- React 19
+- TailwindCSS 4
+- wagmi 2 + viem
+- Zustand
+
+## Local dev
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+```
 
-## Learn More
+Static output is generated in `dist/`.
 
-To learn more about Next.js, take a look at the following resources:
+## Arc Testnet
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Chain ID: `5042002`
+- RPC: `https://rpc.testnet.arc.network`
+- Explorer: `https://testnet.arcscan.app`
+- Game contract: `0x492Ee458Ea47Af5360bFEcA2e3ee5767Cce660C7`
